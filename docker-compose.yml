@@ -1,0 +1,125 @@
+version: '3.8'
+
+# ================================================
+# cwh-todolist Docker Compose 설정
+# ================================================
+# 용도: 로컬 개발 환경용 PostgreSQL 데이터베이스
+#
+# 사용법:
+#   시작: docker-compose up -d
+#   중지: docker-compose down
+#   로그: docker-compose logs -f postgres
+#   재시작: docker-compose restart
+#   완전 삭제: docker-compose down -v (데이터 포함)
+# ================================================
+
+services:
+  # PostgreSQL 데이터베이스
+  postgres:
+    image: postgres:14-alpine
+    container_name: cwh-todolist-postgres
+    restart: unless-stopped
+
+    # 환경 변수 (.env 파일과 동일하게 설정)
+    environment:
+      POSTGRES_USER: cwh_user
+      POSTGRES_PASSWORD: cwh_password
+      POSTGRES_DB: cwh_todolist
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+      TZ: UTC
+
+    # 포트 매핑 (호스트:컨테이너)
+    ports:
+      - "5432:5432"
+
+    # 데이터 영구 저장 (볼륨)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # 초기화 스크립트 (선택사항)
+      # - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+
+    # 헬스체크
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cwh_user -d cwh_todolist"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    # 네트워크
+    networks:
+      - cwh-network
+
+  # pgAdmin (선택사항 - GUI 데이터베이스 관리 도구)
+  # 사용하려면 주석을 제거하세요
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: cwh-todolist-pgadmin
+  #   restart: unless-stopped
+  #
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@cwh-todolist.local
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
+  #
+  #   ports:
+  #     - "5050:80"
+  #
+  #   volumes:
+  #     - pgadmin_data:/var/lib/pgadmin
+  #
+  #   networks:
+  #     - cwh-network
+  #
+  #   depends_on:
+  #     - postgres
+
+# 볼륨 정의
+volumes:
+  postgres_data:
+    driver: local
+    name: cwh-todolist-postgres-data
+
+  # pgAdmin 볼륨 (pgadmin 사용 시)
+  # pgadmin_data:
+  #   driver: local
+  #   name: cwh-todolist-pgadmin-data
+
+# 네트워크 정의
+networks:
+  cwh-network:
+    driver: bridge
+    name: cwh-todolist-network
+
+# ================================================
+# 유용한 명령어
+# ================================================
+#
+# 1. 데이터베이스 시작:
+#    docker-compose up -d
+#
+# 2. 데이터베이스 상태 확인:
+#    docker-compose ps
+#
+# 3. 데이터베이스 로그 확인:
+#    docker-compose logs -f postgres
+#
+# 4. 데이터베이스 접속 (psql):
+#    docker-compose exec postgres psql -U cwh_user -d cwh_todolist
+#
+# 5. SQL 파일 실행:
+#    docker-compose exec -T postgres psql -U cwh_user -d cwh_todolist < database/schema.sql
+#
+# 6. 데이터베이스 백업:
+#    docker-compose exec -T postgres pg_dump -U cwh_user cwh_todolist > backup.sql
+#
+# 7. 데이터베이스 복원:
+#    docker-compose exec -T postgres psql -U cwh_user -d cwh_todolist < backup.sql
+#
+# 8. 데이터베이스 중지:
+#    docker-compose down
+#
+# 9. 데이터베이스 완전 삭제 (데이터 포함):
+#    docker-compose down -v
+#
+# ================================================

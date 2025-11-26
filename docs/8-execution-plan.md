@@ -91,9 +91,11 @@
 **설명**: Docker Compose를 통해 로컬 개발 환경에서 PostgreSQL 14 인스턴스를 구동하고, 환경 변수 및 연결 설정을 완료합니다.
 
 **완료 조건**:
-- [ ] Docker Compose 파일(docker-compose.yml) 작성
-- [ ] 로컬 .env 파일에 DATABASE_URL 설정
-- [ ] 로컬 PostgreSQL 인스턴스 실행 및 연결 테스트 성공
+- [x] Docker Compose 파일(docker-compose.yml) 작성
+- [x] 로컬 .env 파일에 DATABASE_URL 설정
+- [x] 로컬 PostgreSQL 인스턴스 실행 확인 (postgresql-x64-15 서비스 Running)
+- [x] 데이터베이스 설정 스크립트 작성 및 실행 (cwh_user, cwh_todolist 생성 완료)
+- [x] 스키마 실행 완료 (users, todos, public_todos 테이블 생성)
 - [ ] Vercel Postgres 데이터베이스 생성 및 환경 변수 설정
 - [ ] 개발/프로덕션 환경 간 데이터베이스 연결 모두 작동 확인
 
@@ -116,6 +118,8 @@
 - [ ] @map 지시어로 필드명 snake_case 매핑 설정
 - [ ] 초기 인덱스 정의: userId, createdAt, (userId, status) 복합 인덱스
 
+**참고**: 현재 `database/schema.sql` 파일에 직접 SQL 스키마가 작성되어 있습니다. Prisma 설정은 백엔드 개발 시작 시점(BE-3)에 진행 예정입니다.
+
 **의존성**: DB-1
 **예상 소요 시간**: 2시간
 **담당 영역**: 데이터베이스
@@ -133,6 +137,8 @@
 - [ ] Prisma Client 생성: `npx prisma generate`
 - [ ] 프로덕션 환경(Vercel Postgres)에 마이그레이션 배포
 - [ ] Vercel 대시보드에서 프로덕션 데이터베이스 테이블 생성 확인
+
+**참고**: 현재 `database/schema.sql` 파일 사용 중. Prisma 마이그레이션은 백엔드 개발 단계에서 진행 예정.
 
 **의존성**: DB-2
 **예상 소요 시간**: 1.5시간

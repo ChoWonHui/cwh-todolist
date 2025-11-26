@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authRoutes from './routes/authRoutes';
 import { errorHandler } from './middleware/errorHandler';
 
 // Load environment variables
@@ -14,7 +15,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes - will be added later
+// Routes
+app.use('/api/auth', authRoutes);
+
+// Default route
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Welcome to cwh-todolist API' });
 });

@@ -11,66 +11,6 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password }: SignupRequest = req.body;
 
-    // Input validation
-    if (!username || !email || !password) {
-      res.status(400).json({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: '사용자명, 이메일, 비밀번호는 필수 입력값입니다',
-          details: [
-            { field: 'username', message: '사용자명을 입력해주세요' },
-            { field: 'email', message: '이메일을 입력해주세요' },
-            { field: 'password', message: '비밀번호를 입력해주세요' }
-          ]
-        }
-      });
-      return;
-    }
-
-    // Additional validation checks
-    if (username.length < 3 || username.length > 20) {
-      res.status(400).json({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: '사용자명은 3자 이상 20자 이하여야 합니다',
-          details: [
-            { field: 'username', message: '사용자명은 3자 이상 20자 이하여야 합니다' }
-          ]
-        }
-      });
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      res.status(400).json({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: '유효한 이메일 주소를 입력해주세요',
-          details: [
-            { field: 'email', message: '유효한 이메일 주소를 입력해주세요' }
-          ]
-        }
-      });
-      return;
-    }
-
-    if (password.length < 8) {
-      res.status(400).json({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: '비밀번호는 최소 8자 이상이어야 합니다',
-          details: [
-            { field: 'password', message: '비밀번호는 최소 8자 이상이어야 합니다' }
-          ]
-        }
-      });
-      return;
-    }
-
     // Check if username or email already exists
     const existingUserByUsername = await databaseService.getUserByUsername(username);
     if (existingUserByUsername) {
@@ -143,37 +83,6 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password }: { email: string; password: string } = req.body;
-
-    // Input validation
-    if (!email || !password) {
-      res.status(400).json({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: '이메일과 비밀번호는 필수 입력값입니다',
-          details: [
-            { field: 'email', message: '이메일을 입력해주세요' },
-            { field: 'password', message: '비밀번호를 입력해주세요' }
-          ]
-        }
-      });
-      return;
-    }
-
-    // Additional email validation
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      res.status(400).json({
-        success: false,
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: '유효한 이메일 주소를 입력해주세요',
-          details: [
-            { field: 'email', message: '유효한 이메일 주소를 입력해주세요' }
-          ]
-        }
-      });
-      return;
-    }
 
     // Find user by email
     const user = await databaseService.getUserByEmail(email);

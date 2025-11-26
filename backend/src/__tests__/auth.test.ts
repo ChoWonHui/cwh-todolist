@@ -127,6 +127,78 @@ describe('Auth API - Signup', () => {
       expect(response.body.error.details).toBeDefined();
     });
 
+    it('should return 400 with validation errors when username is too short', async () => {
+      const invalidSignupData = {
+        username: 'ab', // Less than 3 characters
+        email: 'test@example.com',
+        password: 'Password123!'
+      };
+
+      const response = await request(app)
+        .post('/api/auth/signup')
+        .send(invalidSignupData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.message).toContain('사용자명');
+    });
+
+    it('should return 400 with validation errors when username is too long', async () => {
+      const invalidSignupData = {
+        username: 'a'.repeat(21), // More than 20 characters
+        email: 'test@example.com',
+        password: 'Password123!'
+      };
+
+      const response = await request(app)
+        .post('/api/auth/signup')
+        .send(invalidSignupData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.message).toContain('사용자명');
+    });
+
+    it('should return 400 with validation errors when password is too short', async () => {
+      const invalidSignupData = {
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'short' // Less than 8 characters
+      };
+
+      const response = await request(app)
+        .post('/api/auth/signup')
+        .send(invalidSignupData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.message).toContain('비밀번호');
+    });
+
+    it('should return 400 with validation errors when email format is invalid', async () => {
+      const invalidSignupData = {
+        username: 'testuser',
+        email: 'invalid-email-format',
+        password: 'Password123!'
+      };
+
+      const response = await request(app)
+        .post('/api/auth/signup')
+        .send(invalidSignupData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+      expect(response.body.error.message).toContain('이메일');
+    });
+
     it('should return 400 with validation errors when password is too short', async () => {
       const invalidData = {
         username: 'testuser',
@@ -282,6 +354,38 @@ describe('Auth API - Login', () => {
       expect(response.body.error).toBeDefined();
       expect(response.body.error.code).toBe('VALIDATION_ERROR');
       expect(response.body.error.details).toBeDefined();
+    });
+
+    it('should return 400 with validation errors when login password is too short', async () => {
+      const invalidLoginData = {
+        email: 'test@example.com',
+        password: 'short' // Too short
+      };
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send(invalidLoginData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('should return 400 with validation errors when login email format is invalid', async () => {
+      const invalidData = {
+        email: 'invalid-email',
+        password: 'Password123!'
+      };
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send(invalidData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBeDefined();
+      expect(response.body.error.code).toBe('VALIDATION_ERROR');
     });
 
     it('should return 400 with validation errors when email format is invalid', async () => {

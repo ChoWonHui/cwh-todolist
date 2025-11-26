@@ -48,23 +48,28 @@ export const validateCreateTodo = [
     .withMessage('할일 제목은 필수입니다')
     .isLength({ min: 1, max: 100 })
     .withMessage('할일 제목은 1자 이상 100자 이하여야 합니다'),
-  
+
   body('description')
     .optional({ checkFalsy: true })
     .trim()
     .isLength({ max: 1000 })
     .withMessage('할일 설명은 0자 이상 1000자 이하여야 합니다'),
-  
+
   body('startDate')
     .isISO8601()
     .withMessage('시작 일시는 올바른 날짜 형식이어야 합니다 (ISO 8601)'),
-  
+
   body('dueDate')
     .isISO8601()
     .withMessage('만료 일시는 올바른 날짜 형식이어야 합니다 (ISO 8601)')
     .custom((value, { req }) => {
-      if (new Date(value) <= new Date(req.body.startDate)) {
-        throw new Error('만료 일시는 시작 일시 이후여야 합니다');
+      // Check if startDate is also provided in the request
+      if (req.body.startDate) {
+        const startDate = new Date(req.body.startDate);
+        const dueDate = new Date(value);
+        if (dueDate <= startDate) {
+          throw new Error('만료 일시는 시작 일시 이후여야 합니다');
+        }
       }
       return true;
     }),
@@ -77,26 +82,28 @@ export const validateUpdateTodo = [
     .trim()
     .isLength({ min: 1, max: 100 })
     .withMessage('할일 제목은 1자 이상 100자 이하여야 합니다'),
-  
+
   body('description')
     .optional({ checkFalsy: true })
     .trim()
     .isLength({ max: 1000 })
     .withMessage('할일 설명은 0자 이상 1000자 이하여야 합니다'),
-  
+
   body('startDate')
     .optional()
     .isISO8601()
     .withMessage('시작 일시는 올바른 날짜 형식이어야 합니다 (ISO 8601)'),
-  
+
   body('dueDate')
     .optional()
     .isISO8601()
     .withMessage('만료 일시는 올바른 날짜 형식이어야 합니다 (ISO 8601)')
     .custom((value, { req }) => {
-      // Only validate if both dates are provided
+      // Only validate if both dates are provided in the request
       if (req.body.startDate && value) {
-        if (new Date(value) <= new Date(req.body.startDate)) {
+        const startDate = new Date(req.body.startDate);
+        const dueDate = new Date(value);
+        if (dueDate <= startDate) {
           throw new Error('만료 일시는 시작 일시 이후여야 합니다');
         }
       }

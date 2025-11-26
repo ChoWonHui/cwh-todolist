@@ -2,7 +2,7 @@
 
 ### 작업 내용
 
-- 이슈 확인 : gh cli 도구를 이용해 14번 Issue 내용과 docs/3-prd.md, docs/8-execution-plan.md 문서를 읽어와 분석한다.
+- 이슈 확인 : gh cli 도구를 이용해 18번 Issue부터 30번 Issue의 내용과 docs/3-prd.md, docs/8-execution-plan.md 문서를 읽어와 분석한다.
 - 자식 브랜치 분기 : feature-11 형태의 자식 브랜치를 생성한다.
 - 기존 코드 분석 : swagger/swagger.json과 코드베이스(backend 디렉토리)의 코드를 분석한다.
 - 계획 수립 : 기존 코드 분석한 결과와 분석된 Issue 내용을 바탕으로 Issue 해결 계획을 수립한다.

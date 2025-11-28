@@ -21,45 +21,20 @@ export const getTodos = async (req: AuthRequest, res: Response): Promise<void> =
     // Extract query parameters
     const { startDate, endDate, sort } = req.query;
 
-    // Build where clause for filtering
-    const whereClause: any = {
-      userId,
-      status: 'ACTIVE'  // Only return active todos
+    // Build filters
+    const filters: any = {
+      status: 'ACTIVE'
     };
 
     if (startDate) {
-      whereClause.startDate = {
-        gte: new Date(startDate as string)
-      };
+      filters.startDate = startDate as string;
     }
 
     if (endDate) {
-      whereClause.dueDate = {
-        lte: new Date(endDate as string)
-      };
+      filters.endDate = endDate as string;
     }
 
-    // Determine sorting order
-    const orderBy = sort === 'dueDate'
-      ? { dueDate: 'asc' as const }
-      : { createdAt: 'desc' as const };
-
-    const todos = await databaseService.prisma.todo.findMany({
-      where: whereClause,
-      orderBy,
-      select: {
-        id: true,
-        userId: true,
-        title: true,
-        description: true,
-        startDate: true,
-        dueDate: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    });
-
+    const todos = await databaseService.getTodos(userId, filters, sort as string);
     const count = todos.length;
 
     res.status(200).json({

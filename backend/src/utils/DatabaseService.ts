@@ -77,6 +77,49 @@ class DatabaseService {
     return result.rows;
   }
 
+  async getTodos(
+    userId: string,
+    filters: {
+      startDate?: string;
+      endDate?: string;
+      status?: 'ACTIVE' | 'TRASHED';
+    } = {},
+    sort?: string
+  ): Promise<Todo[]> {
+    const conditions: string[] = [`"userId" = $1`];
+    const params: any[] = [userId];
+    let paramIndex = 2;
+
+    // Add status filter (default to ACTIVE)
+    const status = filters.status || 'ACTIVE';
+    conditions.push(`status = $${paramIndex++}`);
+    params.push(status);
+
+    // Add date filters
+    if (filters.startDate) {
+      conditions.push(`"startDate" >= $${paramIndex++}`);
+      params.push(new Date(filters.startDate));
+    }
+
+    if (filters.endDate) {
+      conditions.push(`"dueDate" <= $${paramIndex++}`);
+      params.push(new Date(filters.endDate));
+    }
+
+    // Determine sort order
+    const orderBy = sort === 'dueDate' ? '"dueDate" ASC' : '"createdAt" DESC';
+
+    const queryText = `
+      SELECT id, "userId", title, description, "startDate", "dueDate", status, "createdAt", "updatedAt"
+      FROM todos
+      WHERE ${conditions.join(' AND ')}
+      ORDER BY ${orderBy}
+    `;
+
+    const result = await query(queryText, params);
+    return result.rows;
+  }
+
   async getTodoById(id: string, userId: string): Promise<Todo | null> {
     const result = await query(
       `SELECT * FROM todos

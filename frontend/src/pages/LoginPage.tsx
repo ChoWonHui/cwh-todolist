@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { authApi } from '../services/api';
-import { useAuthStore } from '../store/authStore';
-import type { ApiError } from '../types';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { authApi } from "../services/api";
+import { useAuthStore } from "../store/authStore";
+import type { ApiError } from "../types";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -25,7 +25,7 @@ export default function LoginPage() {
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
-        [name]: '',
+        [name]: "",
       }));
     }
   };
@@ -34,13 +34,13 @@ export default function LoginPage() {
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = '이메일을 입력해주세요';
+      newErrors.email = "이메일을 입력해주세요";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = '유효한 이메일 주소를 입력해주세요';
+      newErrors.email = "유효한 이메일 주소를 입력해주세요";
     }
 
     if (!formData.password) {
-      newErrors.password = '비밀번호를 입력해주세요';
+      newErrors.password = "비밀번호를 입력해주세요";
     }
 
     setErrors(newErrors);
@@ -61,12 +61,12 @@ export default function LoginPage() {
       // Update auth store
       login(response.data.user, response.data.token);
 
-      alert('로그인 성공!');
-      navigate('/todos');
+      alert("로그인 성공!");
+      navigate("/todos");
     } catch (error: any) {
       const apiError = error.response?.data as ApiError;
       setErrors({
-        general: apiError?.error?.message || '로그인 중 오류가 발생했습니다.',
+        general: apiError?.error?.message || "로그인 중 오류가 발생했습니다.",
       });
     } finally {
       setLoading(false);
@@ -78,10 +78,10 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-2xl">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            로그인
+            로그인!!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            계정이 없으신가요?{' '}
+            계정이 없으신가요?{" "}
             <Link
               to="/signup"
               className="font-medium text-primary-600 hover:text-primary-500"
@@ -93,7 +93,10 @@ export default function LoginPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 이메일
               </label>
               <input
@@ -103,7 +106,7 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
+                  errors.email ? "border-red-500" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent sm:text-sm`}
                 placeholder="john@example.com"
               />
@@ -113,7 +116,10 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 비밀번호
               </label>
               <input
@@ -123,7 +129,7 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={handleChange}
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.password ? 'border-red-500' : 'border-gray-300'
+                  errors.password ? "border-red-500" : "border-gray-300"
                 } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent sm:text-sm`}
                 placeholder="••••••••"
               />
@@ -139,7 +145,7 @@ export default function LoginPage() {
               disabled={loading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? '처리 중...' : '로그인'}
+              {loading ? "처리 중..." : "로그인"}
             </button>
           </div>
         </form>

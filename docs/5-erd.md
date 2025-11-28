@@ -156,12 +156,12 @@ erDiagram
 
 | 컬럼명 | 타입 | 제약 조건 | 기본값 | 설명 |
 |--------|------|-----------|--------|------|
-| id | UUID | PRIMARY KEY | uuid_generate_v4() | 사용자 고유 식별자 |
-| username | VARCHAR(20) | NOT NULL, UNIQUE | - | 사용자명 (3-20자) |
-| email | VARCHAR(255) | NOT NULL, UNIQUE | - | 이메일 (RFC 5322) |
-| password | VARCHAR(255) | NOT NULL | - | bcrypt 해시 (60자) |
-| createdAt | TIMESTAMP | NOT NULL | now() | 계정 생성 일시 |
-| updatedAt | TIMESTAMP | NOT NULL | now() | 마지막 수정 일시 |
+| id | TEXT (UUID) | PRIMARY KEY | uuid | 사용자 고유 식별자 |
+| username | TEXT | NOT NULL, UNIQUE | - | 사용자명 (3-20자) |
+| email | TEXT | NOT NULL, UNIQUE | - | 이메일 (RFC 5322) |
+| password | TEXT | NOT NULL | - | bcrypt 해시 (60자) |
+| createdAt | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | 계정 생성 일시 |
+| updatedAt | TIMESTAMP | NOT NULL | - | 마지막 수정 일시 (자동 업데이트) |
 
 **비즈니스 규칙**:
 - username: 영문 대소문자, 숫자, 언더스코어(_)만 허용
@@ -181,15 +181,15 @@ erDiagram
 
 | 컬럼명 | 타입 | 제약 조건 | 기본값 | 설명 |
 |--------|------|-----------|--------|------|
-| id | UUID | PRIMARY KEY | uuid_generate_v4() | 할일 고유 식별자 |
-| userId | UUID | NOT NULL, FOREIGN KEY | - | 소유자 (users.id) |
-| title | VARCHAR(100) | NOT NULL | - | 할일 제목 |
+| id | TEXT (UUID) | PRIMARY KEY | uuid | 할일 고유 식별자 |
+| userId | TEXT (UUID) | NOT NULL, FOREIGN KEY | - | 소유자 (users.id) |
+| title | TEXT | NOT NULL | - | 할일 제목 |
 | description | TEXT | NULLABLE | NULL | 할일 상세 설명 |
 | startDate | TIMESTAMP | NOT NULL | - | 시작 일시 |
 | dueDate | TIMESTAMP | NOT NULL | - | 만료 일시 |
-| status | ENUM | NOT NULL | ACTIVE | 상태 (ACTIVE, TRASHED) |
-| createdAt | TIMESTAMP | NOT NULL | now() | 생성 일시 |
-| updatedAt | TIMESTAMP | NOT NULL | now() | 마지막 수정 일시 |
+| status | Status (ENUM) | NOT NULL | ACTIVE | 상태 (ACTIVE, TRASHED) |
+| createdAt | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | 생성 일시 |
+| updatedAt | TIMESTAMP | NOT NULL | - | 마지막 수정 일시 (자동 업데이트) |
 
 **비즈니스 규칙**:
 - title: 1-100자 필수
@@ -199,9 +199,9 @@ erDiagram
 
 **인덱스**:
 - PRIMARY KEY: `id`
-- INDEX: `userId` (사용자별 조회 성능)
-- INDEX: `createdAt` (날짜순 정렬 성능)
-- COMPOSITE INDEX (선택): `(userId, status)` (활성 할일 조회)
+- INDEX: `userId` (사용자별 조회 성능) ✅ 구현됨
+- INDEX: `createdAt` (날짜순 정렬 성능) ✅ 구현됨
+- ⚠️ 추가 인덱스 필요 시 생성: `(userId, status)`, `(userId, dueDate)`
 
 **외래 키**:
 - `userId` REFERENCES `users(id)` ON DELETE CASCADE
@@ -228,18 +228,18 @@ CREATE TYPE status AS ENUM ('ACTIVE', 'TRASHED');
 
 ---
 
-### 3.4 public_todos (공통 할일) - Phase 2
+### 3.4 public_todos (공통 할일) - 현재 구현됨
 
 **설명**: 모든 사용자에게 표시되는 공통 일정 (국경일, 기념일 등)
 
 | 컬럼명 | 타입 | 제약 조건 | 기본값 | 설명 |
 |--------|------|-----------|--------|------|
-| id | UUID | PRIMARY KEY | uuid_generate_v4() | 공통 할일 식별자 |
-| title | VARCHAR(100) | NOT NULL | - | 일정 제목 |
-| description | VARCHAR(500) | NULLABLE | NULL | 일정 설명 |
-| eventDate | DATE | NOT NULL | - | 일정 날짜 (시간 정보 없음) |
-| type | VARCHAR(50) | NOT NULL | - | 일정 유형 (국경일, 기념일 등) |
-| createdAt | TIMESTAMP | NOT NULL | now() | 생성 일시 |
+| id | TEXT (UUID) | PRIMARY KEY | uuid | 공통 할일 식별자 |
+| title | TEXT | NOT NULL | - | 일정 제목 |
+| description | TEXT | NULLABLE | NULL | 일정 설명 |
+| eventDate | TIMESTAMP | NOT NULL | - | 일정 날짜 |
+| type | TEXT | NOT NULL | - | 일정 유형 (국경일, 기념일 등) |
+| createdAt | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | 생성 일시 |
 
 **비즈니스 규칙**:
 - 사용자가 수정/삭제 불가 (BR-PUBLIC-001)
@@ -248,8 +248,7 @@ CREATE TYPE status AS ENUM ('ACTIVE', 'TRASHED');
 
 **인덱스**:
 - PRIMARY KEY: `id`
-- INDEX: `eventDate` (날짜별 조회)
-- INDEX: `type` (유형별 필터링)
+- ⚠️ 추가 인덱스 필요 시 생성: `eventDate` (날짜별 조회), `type` (유형별 필터링)
 
 ---
 
@@ -475,11 +474,11 @@ enum Status {
 
 model User {
   id        String   @id @default(uuid())
-  username  String   @unique @db.VarChar(20)
-  email     String   @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  username  String   @unique
+  email     String   @unique
+  password  String   // bcrypt hashed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   todos Todo[]
@@ -489,14 +488,14 @@ model User {
 
 model Todo {
   id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  title       String   @db.VarChar(100)
-  description String?  @db.Text
-  startDate   DateTime @map("start_date")
-  dueDate     DateTime @map("due_date")
+  userId      String
+  title       String
+  description String?
+  startDate   DateTime
+  dueDate     DateTime
   status      Status   @default(ACTIVE)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -504,41 +503,36 @@ model Todo {
   // Indexes
   @@index([userId])
   @@index([createdAt])
-  @@index([userId, status])
   @@map("todos")
 }
 
 // ========================================
-// Phase 2 Models
+// Phase 2 Models (현재 구현됨)
 // ========================================
 
 model PublicTodo {
   id          String   @id @default(uuid())
-  title       String   @db.VarChar(100)
-  description String?  @db.VarChar(500)
-  eventDate   DateTime @map("event_date") @db.Date
-  type        String   @db.VarChar(50)
-  createdAt   DateTime @default(now()) @map("created_at")
+  title       String
+  description String?
+  eventDate   DateTime
+  type        String
+  createdAt   DateTime @default(now())
 
-  // Indexes
-  @@index([eventDate])
-  @@index([type])
   @@map("public_todos")
 }
 ```
 
 ### 6.2 스키마 설명
 
-**@map 지시어**:
-- Prisma 모델에서는 camelCase 사용
-- 데이터베이스에서는 snake_case 사용
-- `@map("created_at")`: createdAt → created_at
+**실제 구현 사항**:
+- Prisma 모델과 데이터베이스 모두 camelCase 사용
+- PostgreSQL은 자동으로 모든 문자열 타입을 `text`로 변환
+- @@map 지시어로 테이블 이름만 매핑 (컬럼명은 그대로 사용)
 
-**@db 지시어**:
-- PostgreSQL 특정 타입 지정
-- `@db.VarChar(100)`: VARCHAR(100)
-- `@db.Text`: TEXT
-- `@db.Date`: DATE (시간 정보 없음)
+**데이터 타입**:
+- String: PostgreSQL의 `text` 타입으로 변환
+- DateTime: PostgreSQL의 `timestamp without time zone` 타입으로 변환
+- Status: PostgreSQL의 ENUM 타입 (`Status`)
 
 **@default 지시어**:
 - `@default(uuid())`: UUID 자동 생성
@@ -547,6 +541,11 @@ model PublicTodo {
 
 **@updatedAt 지시어**:
 - 레코드 수정 시 자동으로 현재 시각으로 업데이트
+
+**인덱스**:
+- users: username, email에 자동 UNIQUE 인덱스
+- todos: userId, createdAt에 인덱스
+- public_todos: 현재 추가 인덱스 없음 (필요시 추가 가능)
 
 ---
 
@@ -1182,11 +1181,44 @@ model Todo {
 | 버전 | 날짜 | 변경 내용 | 작성자 |
 |------|------|-----------|--------|
 | 1.0 | 2025-11-25 | ERD 문서 초안 작성 | Claude |
+| 1.1 | 2025-11-28 | 실제 DB 스키마와 일치하도록 업데이트 | Claude |
 
 ---
 
-**문서 버전**: 1.0
-**최종 업데이트**: 2025-11-25
+## 실제 구현 참고사항
+
+### 데이터베이스 설정
+- **DBMS**: PostgreSQL 14+
+- **호스트**: localhost:5432
+- **데이터베이스명**: cwh_todolist
+- **사용자**: postgres (또는 필요에 따라 별도 사용자 생성)
+
+### Prisma 사용
+- 테이블 스키마는 `backend/prisma/schema.prisma`에 정의
+- 마이그레이션은 `npx prisma migrate dev` 명령으로 관리
+- 모든 DDL 변경은 Prisma를 통해 수행
+
+### 데이터 타입
+- PostgreSQL은 Prisma String 타입을 자동으로 `text`로 변환
+- 길이 제한은 애플리케이션 레벨에서 검증
+- UUID는 TEXT 타입으로 저장
+
+### 컬럼명
+- Prisma 모델과 데이터베이스 모두 camelCase 사용
+- 테이블명만 @@map으로 snake_case로 매핑
+- 별도의 컬럼 매핑 없음
+
+### 현재 구현 상태
+- ✅ users 테이블: 완전 구현
+- ✅ todos 테이블: 완전 구현
+- ✅ public_todos 테이블: 완전 구현 (Phase 2 기능)
+- ✅ Status ENUM: 구현됨 (ACTIVE, TRASHED)
+- ⚠️ 일부 최적화 인덱스: 필요 시 추가 가능
+
+---
+
+**문서 버전**: 1.1
+**최종 업데이트**: 2025-11-28
 **관련 문서**: [PRD](./3-prd.md), [도메인 정의서](./1-domain-definition.md)
 
 ---

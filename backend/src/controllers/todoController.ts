@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../types';
-import prisma from '../utils/prisma';
+import databaseService from '../utils/DatabaseService';
 
 /**
  * @desc    Get all todos for authenticated user
@@ -21,15 +21,7 @@ export const getTodos = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const todos = await prisma.todo.findMany({
-      where: {
-        userId,
-        status: 'ACTIVE'
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    const todos = await databaseService.getTodosByUserId(userId, 'ACTIVE');
 
     return res.status(200).json({
       success: true,
@@ -71,15 +63,12 @@ export const createTodo = async (req: AuthRequest, res: Response) => {
 
     const { title, description, startDate, dueDate } = req.body;
 
-    const todo = await prisma.todo.create({
-      data: {
-        userId,
-        title,
-        description,
-        startDate: new Date(startDate),
-        dueDate: new Date(dueDate),
-        status: 'ACTIVE'
-      }
+    const todo = await databaseService.createTodo({
+      userId,
+      title,
+      description,
+      startDate: new Date(startDate),
+      dueDate: new Date(dueDate),
     });
 
     return res.status(201).json({
@@ -121,9 +110,7 @@ export const updateTodo = async (req: AuthRequest, res: Response) => {
     }
 
     // Check if todo exists and belongs to user
-    const existingTodo = await prisma.todo.findUnique({
-      where: { id }
-    });
+    const existingTodo = await databaseService.getTodoById(id, userId);
 
     if (!existingTodo) {
       return res.status(404).json({
@@ -131,16 +118,6 @@ export const updateTodo = async (req: AuthRequest, res: Response) => {
         error: {
           code: 'NOT_FOUND',
           message: 'Todo not found'
-        }
-      });
-    }
-
-    if (existingTodo.userId !== userId) {
-      return res.status(403).json({
-        success: false,
-        error: {
-          code: 'FORBIDDEN',
-          message: 'Not authorized to update this todo'
         }
       });
     }
@@ -153,10 +130,7 @@ export const updateTodo = async (req: AuthRequest, res: Response) => {
     if (startDate !== undefined) updateData.startDate = new Date(startDate);
     if (dueDate !== undefined) updateData.dueDate = new Date(dueDate);
 
-    const todo = await prisma.todo.update({
-      where: { id },
-      data: updateData
-    });
+    const todo = await databaseService.updateTodo(id, userId, updateData);
 
     return res.status(200).json({
       success: true,
@@ -197,9 +171,7 @@ export const deleteTodo = async (req: AuthRequest, res: Response) => {
     }
 
     // Check if todo exists and belongs to user
-    const existingTodo = await prisma.todo.findUnique({
-      where: { id }
-    });
+    const existingTodo = await databaseService.getTodoById(id, userId);
 
     if (!existingTodo) {
       return res.status(404).json({
@@ -211,19 +183,7 @@ export const deleteTodo = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    if (existingTodo.userId !== userId) {
-      return res.status(403).json({
-        success: false,
-        error: {
-          code: 'FORBIDDEN',
-          message: 'Not authorized to delete this todo'
-        }
-      });
-    }
-
-    await prisma.todo.delete({
-      where: { id }
-    });
+    await databaseService.deleteTodo(id, userId);
 
     return res.status(200).json({
       success: true,

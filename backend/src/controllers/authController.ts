@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { SignupRequest } from '../types';
 import databaseService from '../utils/DatabaseService';
+import logger from '../utils/logger';
 
 // Load JWT secret from environment variables
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key_for_development';
@@ -152,7 +153,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
       }
     });
   } catch (error: any) {
-    console.error('Signup error:', error);
+    logger.error('Signup error:', error);
     res.status(500).json({
       success: false,
       error: {
@@ -294,7 +295,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       }
     });
   } catch (error: any) {
-    console.error('Login error:', error);
+    logger.error('Login error:', error);
     res.status(500).json({
       success: false,
       error: {

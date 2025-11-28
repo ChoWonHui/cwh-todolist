@@ -32,7 +32,7 @@ describe('Error Handler Middleware', () => {
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: 'Test error' // Actual error message is preserved
+        message: process.env.NODE_ENV === 'development' ? 'Test error' : 'An error occurred'
       }
     });
   });
@@ -47,7 +47,7 @@ describe('Error Handler Middleware', () => {
       success: false,
       error: {
         code: 'ERROR',
-        message: 'Validation error' // Actual error message is preserved
+        message: process.env.NODE_ENV === 'development' ? 'Validation error' : 'An error occurred'
       }
     });
   });

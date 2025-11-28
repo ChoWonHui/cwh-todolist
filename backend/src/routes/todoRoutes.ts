@@ -1,7 +1,7 @@
 import express from 'express';
 import { getTodos, createTodo, updateTodo, deleteTodo } from '../controllers/todoController';
 import { authenticate } from '../middleware/authMiddleware';
-import { validateCreateTodo, validateUpdateTodo } from '../middleware/validators';
+import { validateCreateTodo, validateUpdateTodo, handleValidationErrors } from '../middleware/validators';
 
 const router = express.Router();
 
@@ -108,7 +108,7 @@ router.get('/', authenticate, getTodos);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/', authenticate, validateCreateTodo, createTodo);
+router.post('/', authenticate, validateCreateTodo, handleValidationErrors, createTodo);
 
 /**
  * @swagger
@@ -191,7 +191,7 @@ router.post('/', authenticate, validateCreateTodo, createTodo);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/:id', authenticate, validateUpdateTodo, updateTodo);
+router.put('/:id', authenticate, validateUpdateTodo, handleValidationErrors, updateTodo);
 
 /**
  * @swagger

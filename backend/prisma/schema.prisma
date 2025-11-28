@@ -18,6 +18,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   todos     Todo[]
+
+  @@map("users")
 }
 
 model Todo {
@@ -35,6 +37,7 @@ model Todo {
 
   @@index([userId])
   @@index([createdAt])
+  @@map("todos")
 }
 
 model PublicTodo {
@@ -44,6 +47,8 @@ model PublicTodo {
   eventDate   DateTime
   type        String
   createdAt   DateTime @default(now())
+
+  @@map("public_todos")
 }
 
 enum Status {
